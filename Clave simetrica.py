@@ -1,62 +1,70 @@
+import os, base64
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 from cryptography.hazmat.primitives import hashes
 from cryptography.fernet import Fernet
-import base64
-import os
 
-# ---------- FUNCIONES ----------
+# ================== SEGURIDAD ==================
 
-def generar_clave(password: str, salt: bytes) -> bytes:
-    """
-    Genera una clave segura a partir de una contraseña
-    """
+def generar_clave(password, salt):
     kdf = PBKDF2HMAC(
         algorithm=hashes.SHA256(),
         length=32,
         salt=salt,
-        iterations=100_000,
+        iterations=300_000
     )
     return base64.urlsafe_b64encode(kdf.derive(password.encode()))
 
-def cifrar_archivo(nombre_archivo, password):
+# ================== CIFRADO ==================
+
+def cifrar_archivo(ruta, password):
     salt = os.urandom(16)
     clave = generar_clave(password, salt)
-    cipher = Fernet(clave)
+    fernet = Fernet(clave)
 
-    with open(nombre_archivo, "rb") as f:
+    with open(ruta, "rb") as f:
         datos = f.read()
 
-    datos_cifrados = cipher.encrypt(datos)
+    datos_cifrados = fernet.encrypt(datos)
 
-    with open(nombre_archivo + ".enc", "wb") as f:
+    with open(ruta + ".enc", "wb") as f:
         f.write(salt + datos_cifrados)
 
-    print("Archivo cifrado correctamente.")
+    print(f"[OK] Archivo cifrado: {ruta}.enc")
 
-def descifrar_archivo(nombre_archivo, password):
-    with open(nombre_archivo, "rb") as f:
+# ================== DESCIFRADO ==================
+
+def descifrar_archivo(ruta, password):
+    with open(ruta, "rb") as f:
         contenido = f.read()
 
     salt = contenido[:16]
     datos_cifrados = contenido[16:]
 
     clave = generar_clave(password, salt)
-    cipher = Fernet(clave)
+    fernet = Fernet(clave)
 
-    datos = cipher.decrypt(datos_cifrados)
+    datos = fernet.decrypt(datos_cifrados)
 
-    with open("archivo_descifrado.txt", "wb") as f:
+    archivo_original = ruta.replace(".enc", "")
+    with open(archivo_original, "wb") as f:
         f.write(datos)
 
-    print("Archivo descifrado correctamente.")
+    print(f"[OK] Archivo descifrado: {archivo_original}")
 
-# ---------- PROGRAMA PRINCIPAL ----------
+# ================== USO ==================
 
-password = "ClaveSuperSecreta123"
+if __name__ == "__main__":
+    password = input("Introduce tu contraseña: ")
 
-# Crear archivo de prueba
-with open("mensaje.txt", "w") as f:
-    f.write("Información confidencial de la empresa")
+    print("1. Cifrar archivo")
+    print("2. Descifrar archivo")
+    opcion = input("Elige opción: ")
 
-cifrar_archivo("mensaje.txt", password)
-descifrar_archivo("mensaje.txt.enc", password)
+    ruta = input("Ruta del archivo: ")
+
+    if opcion == "1":
+        cifrar_archivo(ruta, password)
+    elif opcion == "2":
+        descifrar_archivo(ruta, password)
+    else:
+        print("Opción inválida")
