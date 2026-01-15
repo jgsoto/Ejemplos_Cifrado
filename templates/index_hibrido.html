@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cifrado Híbrido Elite</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style_hibrido.css') }}">
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>Cifrado Híbrido </h1>
+            <p>Protección académica de archivos mediante RSA + AES</p>
+        </header>
+
+        {% with messages = get_flashed_messages() %}
+        {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+            <div class="alert">{{ message }}</div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        {% endwith %}
+
+        <div class="grid">
+            <!-- Cifrado -->
+            <div class="card">
+                <h2>Cifrar Archivo</h2>
+                <form action="/cifrar" method="POST" enctype="multipart/form-data">
+                    <div class="form-group">
+                        <label>Archivo a proteger</label>
+                        <div class="file-input-wrapper">
+                            <input type="file" name="archivo" required onchange="updateFileName(this)">
+                            <span class="file-name">Seleccionar archivo...</span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Clave Pública (.pem)</label>
+                        <div class="file-input-wrapper">
+                            <input type="file" name="clave_publica" required onchange="updateFileName(this)">
+                            <span class="file-name">Seleccionar clave pública...</span>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn">CIFRAR Y DESCARGAR</button>
+                </form>
+            </div>
+
+            <!-- Descifrado -->
+            <div class="card">
+                <h2>Descifrar Archivo</h2>
+                <form action="/descifrar" method="POST" enctype="multipart/form-data">
+                    <div class="form-group">
+                        <label>Archivo Cifrado (.secure)</label>
+                        <div class="file-input-wrapper">
+                            <input type="file" name="archivo" required onchange="updateFileName(this)">
+                            <span class="file-name">Seleccionar archivo .secure...</span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Clave Privada (.pem)</label>
+                        <div class="file-input-wrapper">
+                            <input type="file" name="clave_privada" required onchange="updateFileName(this)">
+                            <span class="file-name">Seleccionar clave privada...</span>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn"
+                        style="background: #10b981; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);">DESCIFRAR Y
+                        DESCARGAR</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function updateFileName(input) {
+            const fileName = input.files[0] ? input.files[0].name : "Seleccionar archivo...";
+            input.nextElementSibling.textContent = fileName;
+
+            // Pulse effect on selection
+            const wrapper = input.parentElement;
+            wrapper.style.borderColor = 'var(--primary)';
+            setTimeout(() => {
+                wrapper.style.borderColor = 'rgba(255, 255, 255, 0.2)';
+            }, 500);
+        }
+    </script>
+</body>
+
+</html>
